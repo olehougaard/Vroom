@@ -65,6 +65,19 @@ test('vector addition', expect => {
 	expect.deepEquals(vector(2, 3).plus(vector(1, 1)), vector(3, 4), 'Vector addition works like mathematical definition');
 });
 
+test('vector multiplication', expect => {
+	expect.deepEquals(vector(2, 3).multiply(2), vector(4, 6), 'multiply is by coordinate')
+})
+
+test('dot product', expect => {
+	expect.equals(vector(2, 3).dot(vector(4, -2)), 2)
+})
+
+test('rotate', expect => {
+	expect.deepEquals(vector(2, 3).rotleft(), vector(-3, 2), 'Rotate left')
+	expect.deepEquals(vector(2, 3).rotright(), vector(3, -2), 'Rotate right')
+})
+
 test('velocity between positions', expect => {
 	expect.deepEquals(position(7, 3).minus(position(2, 5)), vector(5, -2), 'minus is subtraction by coordinates.');
 });

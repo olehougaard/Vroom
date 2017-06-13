@@ -49,10 +49,22 @@ module.exports = (() => {
 
 	vector = (dx, dy) => value_object({dx: dx || 0, dy: dy || 0}, {
 		length() {
-			return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+			return Math.sqrt(this.dx * this.dx + this.dy * this.dy)
 		},
 		plus(that) {
-			return vector(this.dx + that.dx, this.dy + that.dy);
+			return vector(this.dx + that.dx, this.dy + that.dy)
+		},
+		multiply(t) {
+			return vector(this.dx * t, this.dy * t)
+		},
+		dot(that) {
+			return this.dx * that.dx + this.dy * that.dy
+		},
+		rotleft() {
+			return vector(-this.dy, this.dx)
+		},
+		rotright() {
+			return vector(this.dy, -this.dx)
 		}
 	});
 
