@@ -84,7 +84,7 @@ const track_printer = () => {
             track[y] = track[y].slice(0, x).concat(values.join(''), track[y].slice(x + values.length))
             return this;
         }
-    }
+    }.splice(0, 7, '-', '-')
 }
 
 test('The short run', expect => {
@@ -271,8 +271,8 @@ test('Crashing', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', '9', 'Game prompts for move')
     console.expect_tell(track_printer()
-        .splice(9, 3, '-', '-', '-')
-        .splice(8, 3, '-', '-', '-')
+        .splice(9, 3, '¤', '¤', '¤')
+        .splice(8, 3, '¤', '¤', '¤')
         .splice(6, 3, '.')
         .toString(), 'Game shows game state')
     console.expect_ask('Danger, danger, danger ...', 'Anything', 'Game waits for prompt')

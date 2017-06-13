@@ -141,6 +141,7 @@ module.exports = (() => {
 		const [width, height] = track_spec.length === 0? [0, 0] : [track_spec[0].length, track_spec.length]
 		return {
 			size: { width, height },
+			finish_line: finish_line,
 			in_bounds(p) {
 				return the_track[p.y] && the_track[p.y][p.x];
 			},
