@@ -18,7 +18,7 @@ const value_object = (values, prototype) => {
 };
 
 module.exports = (() => {
-	let position, vector, move, path, line, rectangle, track;
+	let position, vector, move, path, line, rectangle, track_from_string_array;
 
 	position = (x, y) => value_object({x: x||0, y: y|| 0}, {
 		north() {
@@ -60,11 +60,8 @@ module.exports = (() => {
 		dot(that) {
 			return this.dx * that.dx + this.dy * that.dy
 		},
-		rotleft() {
+		normal() {
 			return vector(-this.dy, this.dx)
-		},
-		rotright() {
-			return vector(this.dy, -this.dx)
 		}
 	});
 
@@ -109,6 +106,9 @@ module.exports = (() => {
 	});
 
 	const gen_seq = (gen) => (from, to, includeEnd) => ({
+		contains(i) {
+			return from <= i && i <= to
+		},
 		forEach(f) {
 			for(var i = from; includeEnd ? i <= to : i < to; i++) {
 				f(gen(i), i);
@@ -142,25 +142,24 @@ module.exports = (() => {
 	});
 	const range = gen_seq(i => i);
 
-	track = (track_spec, finish_positions) => {
-		const the_track = track_spec.map(row=>(row.split('').map(p=>p === ' '))).reverse()
-		const finish_line = finish_positions || []
+	const track = (size, in_bounds, finish_line) => {
 		const affected_area = move => {
 			const [x0, x1] = move.velocity.dx > 0 ? [ move.start.x, move.end.x] : [move.end.x, move.start.x];
 			const [y0, y1] = move.velocity.dy > 0 ? [ move.start.y, move.end.y] : [move.end.y, move.start.y];
 			return gen_seq(row => range(x0, x1, true))(y0, y1, true);
 		};
-		const [width, height] = track_spec.length === 0? [0, 0] : [track_spec[0].length, track_spec.length]
+		const range_x = range(0, size.width - 1)
+		const range_y = range(0, size.height - 1)
 		return {
-			size: { width, height },
-			finish_line: finish_line,
+			size,
+			finish_line,
 			in_bounds(p) {
-				return the_track[p.y] && the_track[p.y][p.x];
+				return range_x.contains(p.x) && range_y.contains(p.y) && in_bounds(p)
 			},
 			intersects(move) {
 				if (!this.in_bounds(move.start) || !this.in_bounds(move.end)) { return true; }
 				const inadmissable_squares = affected_area(move).flatMap(
-						(row, row_no) => row.collect(col_no => !the_track[row_no][col_no] && rectangle(col_no, row_no, 1, 1)));
+						(row, row_no) => row.collect(col_no => !this.in_bounds(position(col_no, row_no)) && rectangle(col_no, row_no, 1, 1)));
 				return inadmissable_squares.some(sq => sq.intersects(move.line()));
 			},
 			finish(move) {
@@ -171,7 +170,7 @@ module.exports = (() => {
 			is_connected(p0, p1) {
 				const seen = new Set();
 				const stack = [];
-				const hash = position => position.x * the_track.length + position.y;
+				const hash = position => position.x * size.height + position.y;
 				const visit_nodes = (...ps) => {
 					for(let p of ps.filter(p => this.in_bounds(p) && !seen.has(hash(p)))) {
 						stack.push(p);
@@ -186,8 +185,14 @@ module.exports = (() => {
 				}
 				return false;
 			}
-		};
+		}
+	}
+
+	track_from_string_array = (track_spec, finish_positions) => {
+		if (track_spec.length === 0) return track(p => false, [], { width: 0, height: 0 })
+		const in_bounds = (p) => track_spec[track_spec.length - p.y - 1] && track_spec[track_spec.length - p.y - 1][p.x] === ' '
+		return track({width: track_spec[0].length, height: track_spec.length}, in_bounds, finish_positions)
 	};
 
-	return {position, vector, move, path, line, rectangle, track};
+	return {position, vector, move, path, line, rectangle, track, track_from_string_array};
 })();

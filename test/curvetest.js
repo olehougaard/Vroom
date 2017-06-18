@@ -6,7 +6,7 @@ const test = (description, test_function) => {
 	});
 };
 test.skip = _test.skip
-const { position } = require('../track.js')
+const { position, vector } = require('../track.js')
 const curve = require('../curve.js')(position)
 
 const shortest_line = curve.line(position(0, 0), position(0, 0))
@@ -56,9 +56,52 @@ test('Left/right', expect => {
     expect.false(horizontal_line.is_left(position(1, -1)));
     expect.true(horizontal_line.is_right(position(1, -1)));
     expect.false(horizontal_line.is_left(position(3, -1)));
-    expect.false(horizontal_line.is_right(position(3, -1)));
+    expect.true(horizontal_line.is_right(position(3, -1)));
     expect.false(curve.line(position(2, 0), position(0, 0)).is_left(position(1, 1)));
     expect.true(curve.line(position(2, 0), position(0, 0)).is_right(position(1, 1)));
     expect.true(curve.line(position(2, 0), position(0, 0)).is_left(position(1, -1)));
     expect.false(curve.line(position(2, 0), position(0, 0)).is_right(position(1, -1)));
+})
+
+test('next_to', expect => {
+    expect.false(shortest_line.next_to(position(1, 1)));
+    expect.true(horizontal_line.next_to(position(1, 1)));
+    expect.true(horizontal_line.next_to(position(1, -1)));
+    expect.false(horizontal_line.next_to(position(3, -1)));
+    expect.true(curve.line(position(2, 0), position(0, 0)).next_to(position(1, 1)));
+    expect.true(curve.line(position(2, 0), position(0, 0)).next_to(position(1, -1)));
+})
+
+test('before/after', expect => {
+    expect.false(shortest_line.is_before(position(1, 1)));
+    expect.false(shortest_line.is_after(position(1, 1)));
+    expect.false(horizontal_line.is_before(position(1, 1)));
+    expect.false(horizontal_line.is_after(position(1, 1)));
+    expect.false(horizontal_line.is_before(position(1, -1)));
+    expect.false(horizontal_line.is_after(position(1, -1)));
+    expect.false(horizontal_line.is_before(position(3, -1)));
+    expect.true(horizontal_line.is_after(position(3, -1)));
+    expect.false(curve.line(position(2, 0), position(0, 0)).is_before(position(1, 1)));
+    expect.false(curve.line(position(2, 0), position(0, 0)).is_after(position(1, 1)));
+})
+
+test('bounding rectangle', expect => {
+    expect.deepEquals(diagonal_line.bounding_box, { x: 0, y: 0, width: 2, height: 2})
+    expect.deepEquals(curve.line(position(2, 0), position(6, -3)).bounding_box, { x: 2, y: -3, width: 4, height: 3})
+})
+
+test('angled line', expect => {
+    const line = curve.line(position(0, 0), position(4, 2))
+    expect.deepEquals(line[0], position(0, 0))
+    expect.deepEquals(line[1], position(1, 1))
+    expect.deepEquals(line[2], position(2, 1))
+    expect.deepEquals(line[3], position(3, 2))
+    expect.deepEquals(line[4], position(4, 2))
+})
+
+test('displace', expect => {
+    const line = curve.line(position(0, 0), position(4, 2))
+    const expected = curve.line(position(0, 1), position(4, 3))
+    expect.deepEquals(line.displace(vector(0, 1)).length, expected.length)
+    expect.true(line.displace(vector(0, 1)).every((e, i) => e.equals(expected[i])))
 })

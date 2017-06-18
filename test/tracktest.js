@@ -9,7 +9,7 @@ const test = (description, test_function) => {
 		expect.end();
 	});
 };
-const { position, vector, move, path, track, line, rectangle } = require('../track.js');
+const { position, vector, move, path, track_from_string_array, line, rectangle } = require('../track.js');
 
 test('default position', expect => {
 	expect.deepEqual(position(), {x: 0, y: 0}, 'default position is (0, 0)');
@@ -74,8 +74,7 @@ test('dot product', expect => {
 })
 
 test('rotate', expect => {
-	expect.deepEquals(vector(2, 3).rotleft(), vector(-3, 2), 'Rotate left')
-	expect.deepEquals(vector(2, 3).rotright(), vector(3, -2), 'Rotate right')
+	expect.deepEquals(vector(2, 3).normal(), vector(-3, 2), 'Rotate left')
 })
 
 test('velocity between positions', expect => {
@@ -148,7 +147,7 @@ const track_spec = [
 	'X   XX   X',
 	'X  XXXX  X'
 ];
-const the_track = track(track_spec.slice(), [position(7, 0), position(8, 0)]);
+const the_track = track_from_string_array(track_spec.slice(), [position(7, 0), position(8, 0)]);
 
 test('array size', expect => {
 	const {width, height} = the_track.size
@@ -163,7 +162,7 @@ test('array out of bounds', expect => {
 
 test('track non-destructive', expect => {
 	var other = track_spec.slice();
-	track(other, [position(7, 0), position(8, 0)])
+	track_from_string_array(other, [position(7, 0), position(8, 0)])
 	expect.deepEquals(other, track_spec, 'input is unchanged');
 });
 
@@ -202,7 +201,7 @@ const disconnected_track_spec = [
 	'X   XX   X',
 	'X  XXXX  X'
 ];
-const disconnected_track = track(disconnected_track_spec);
+const disconnected_track = track_from_string_array(disconnected_track_spec);
 
 test('connected', expect => {
 	expect.true(the_track.is_connected(position(1, 0), position(1, 0)), 'A position on the track is connected to itself.');

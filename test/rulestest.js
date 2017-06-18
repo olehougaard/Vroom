@@ -6,7 +6,7 @@ const test = (description, test_function) => {
 	});
 };
 test.skip = tape.skip;
-const { position, vector, move, path, track} = require('../track.js');
+const { position, vector, move, path, track_from_string_array} = require('../track.js');
 const { is_legal, next_moves, run } = require('../rules.js')(vector, move);
 
 const track_spec = [
@@ -21,7 +21,7 @@ const track_spec = [
 	'X  XXXX  X',
 	'X  XXXX  X'
 ];
-const the_track = track(track_spec, [position(7, 0), position(8, 0)]);
+const the_track = track_from_string_array(track_spec, [position(7, 0), position(8, 0)]);
 
 test('legal moves', expect => {
 	const expectLegal = (start_position, desc, ...velocities) => {
