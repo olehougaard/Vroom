@@ -4,8 +4,22 @@
   "description": "Created with [Nodeclipse](https://github.com/Nodeclipse/nodeclipse-1)\r  ([Eclipse Marketplace](http://marketplace.eclipse.org/content/nodeclipse), [site](http://www.nodeclipse.org))",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/tape test/*.js"
+    "test": "tape test/*.js"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Ole I Hougaard",
+  "license": "Apache-2.0",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/olehougaard/Vroom.git"
+  },
+  "keywords": [
+    "vroom"
+  ],
+  "bugs": {
+    "url": "https://github.com/olehougaard/Vroom/issues"
+  },
+  "homepage": "https://github.com/olehougaard/Vroom#readme"
 }
