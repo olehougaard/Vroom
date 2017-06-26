@@ -16,10 +16,10 @@ module.exports = ((position) => {
                     return this.some(p => p.equals(position))
                 },
                 is_left(position) {
-                    return relative(position).v > 0
+                    return relative(position).v >= 0
                 },
                 is_right(position) {
-                    return relative(position).v < 0
+                    return relative(position).v <= 0
                 },
                 next_to(position) {
                   const t = relative(position)
@@ -30,6 +30,12 @@ module.exports = ((position) => {
                 },
                 is_after(position) {
                   return relative(position).u > 1  
+                },
+                start() {
+                    return from
+                },
+                end() {
+                    return to
                 },
                 bounding_box: { 
                     x: Math.min(from.x, to.x), 

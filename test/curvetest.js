@@ -105,3 +105,9 @@ test('displace', expect => {
     expect.deepEquals(line.displace(vector(0, 1)).length, expected.length)
     expect.true(line.displace(vector(0, 1)).every((e, i) => e.equals(expected[i])))
 })
+
+test('lines have defined start and end', expect => {
+    const line = curve.line(position(0, 0), position(4, 2))
+    expect.deepEquals(line.start(), position(0, 0))
+    expect.deepEquals(line.end(), position(4, 2))
+})
