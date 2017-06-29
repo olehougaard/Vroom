@@ -43,7 +43,7 @@ module.exports = (() => {
 			return rectangle(this.x, this.y, 1, 1);
 		},
 		to(p) {
-			return move(this)(p.minus(this));
+			return move(this, p.minus(this));
 		}
 	});
 
@@ -66,7 +66,7 @@ module.exports = (() => {
 	});
 
 
-	move = (origin) => (velocity) => value_object({start: origin, velocity: velocity, end: origin.plus(velocity)}, {
+	move = (origin, velocity) => value_object({start: origin, velocity: velocity, end: origin.plus(velocity)}, {
 		line() {
 				var {x, y} = origin, {dx, dy} = velocity;
 				return line(x + 0.5, y + 0.5)(dx, dy);
@@ -77,7 +77,7 @@ module.exports = (() => {
 	path = (origin, ...velocities) => {
 	  const last = (xs) => xs[xs.length - 1]
 	  const end = (move, def) => move? move.end : def
-	  return velocities.reduce((result, velocity) => result.concat(move(end(last(result)) || origin)(velocity)), []);
+	  return velocities.reduce((result, velocity) => result.concat(move(end(last(result)) || origin, velocity)), []);
 	}
 
 	line = (x, y) => (dx, dy) => value_object({x, y, dx, dy}, {

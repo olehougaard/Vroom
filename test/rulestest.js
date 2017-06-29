@@ -26,12 +26,12 @@ const the_track = track_from_string_array(track_spec, [position(7, 0), position(
 test('legal moves', expect => {
 	const expectLegal = (start_position, desc, ...velocities) => {
 		velocities
-		    .map(move(start_position))
+		    .map(v => move(start_position, v))
 				.forEach(m => expect.true(is_legal(the_track)(m), desc + ' ' + m));
 	};
 	const expectIllegal = (start_position, desc, ...velocities) => {
 		velocities
-		    .map(move(start_position))
+		    .map(v => move(start_position, v))
 				.forEach(m => expect.false(is_legal(the_track)(m), desc + ' ' + m));
 	};
 	expectLegal(position(3, 5), 'basic moves',
@@ -47,34 +47,34 @@ test('legal moves', expect => {
 });
 
 test('moves', expect => {
-  expect.deepEqual(next_moves(the_track)(move(position(2, 4))(vector(1, 1))),
+  expect.deepEqual(next_moves(the_track)(move(position(2, 4), vector(1, 1))),
   		{ possible_moves:
               [vector(0, 2), vector(1, 2), vector(2, 2),
                vector(0, 1), vector(1, 1), vector(2, 1),
                vector(0, 0), vector(1, 0), vector(2, 0),
-             ].map(move(position(3, 5))),
-		  default_move: move(position(3, 5))(vector(1, 1))
+             ].map(v => move(position(3, 5), v)),
+		  default_move: move(position(3, 5), vector(1, 1))
 		}, 'Basic move is the 8 directions');
- expect.deepEqual(next_moves(the_track)(move(position(1, 3))(vector(2, 2))),
+ expect.deepEqual(next_moves(the_track)(move(position(1, 3), vector(2, 2))),
         { possible_moves:
             [vector(1, 2), vector(2, 2), vector(3, 2),
 			 vector(1, 1), vector(2, 1), vector(3, 1)
-			].map(move(position(3, 5))),
-		  default_move: move(position(3, 5))(vector(2, 2))
+			].map(v => move(position(3, 5), v)),
+		  default_move: move(position(3, 5), vector(2, 2))
 		}, 'Cannot move out of bounds');
-  expect.deepEqual(next_moves(the_track)(move(position(0, 0))(vector(0, 0))),
-           { possible_moves: [], default_move: move(position(0, 0))(vector(0, 0)) }, 'No legal moves from move starting out of bounds');
-  expect.deepEqual(next_moves(the_track)(move(position(3, 2))(vector(2, 0))),
-           { possible_moves: [], default_move: move(position(5, 2))(vector(2, 0)) }, 'No legal moves from out of bounds');
-  expect.deepEqual(next_moves(the_track)(move(position(1, 2))(vector(2, 0))),
-           { possible_moves: [], default_move: move(position(3, 2))(vector(2, 0)) }, 'No legal moves through out of bounds');
-  expect.deepEqual(next_moves(the_track)(move(position(7, 4))(vector(0, -3))),
+  expect.deepEqual(next_moves(the_track)(move(position(0, 0), vector(0, 0))),
+           { possible_moves: [], default_move: move(position(0, 0), vector(0, 0)) }, 'No legal moves from move starting out of bounds');
+  expect.deepEqual(next_moves(the_track)(move(position(3, 2), vector(2, 0))),
+           { possible_moves: [], default_move: move(position(5, 2), vector(2, 0)) }, 'No legal moves from out of bounds');
+  expect.deepEqual(next_moves(the_track)(move(position(1, 2), vector(2, 0))),
+           { possible_moves: [], default_move: move(position(3, 2), vector(2, 0)) }, 'No legal moves through out of bounds');
+  expect.deepEqual(next_moves(the_track)(move(position(7, 4), vector(0, -3))),
   		{ possible_moves:
             [vector(-1, -2), vector(0, -2), vector(1, -2),
              vector(-1, -3), vector(0, -3), vector(1, -3),
              vector(-1, -4), vector(0, -4), vector(1, -4)
-			].map(move(position(7, 1))),
-		  default_move: move(position(7, 1))(vector(0, -3))
+			].map(v => move(position(7, 1), v)),
+		  default_move: move(position(7, 1), vector(0, -3))
 		}, 'It\'s legal to move out of bounds if it\'s a finisher');
 });
 
@@ -82,7 +82,7 @@ const preprogrammed = (onDefault) => (...velocities) => {
   	const iterator = velocities[Symbol.iterator]();
   	const player = ({ possible_moves, default_move }) => {
 		  if (onDefault) onDefault(default_move)
-		  return Promise.resolve(possible_moves[0] && move(possible_moves[0].start)(iterator.next().value))
+		  return Promise.resolve(possible_moves[0] && move(possible_moves[0].start, iterator.next().value))
 	  }
 	player.expected = velocities
 	player.expected.last = velocities[velocities.length - 1]
@@ -116,7 +116,7 @@ const test_players = (onDefault) => {
 		player: (iterator => ({ possible_moves, default_move }) => {
 				if (onDefault) onDefault(default_move)
 				const next = iterator.next();
-				return next.done ? Promise.reject('Done') : Promise.resolve(move(possible_moves[0].start)(next.value));
+				return next.done ? Promise.reject('Done') : Promise.resolve(move(possible_moves[0].start, next.value));
 			})(velocities[Symbol.iterator]()),
 		starting_position: position(2, 0)
 	}
@@ -145,7 +145,7 @@ test('single-player run within bounds', (expect) => {
 });
 
 test('Default move', expect => {
-	let default_moves = [ move(position(2, 0))(vector()), move(position(2, 1))(vector(0, 1)), move(position(3, 3))(vector(1, 2)) ]
+	let default_moves = [ move(position(2, 0), vector()), move(position(2, 1), vector(0, 1)), move(position(3, 3), vector(1, 2)) ]
 	expect.plan(default_moves.length)
 	let turn = 0
 	const onDefault = (default_move) => {
@@ -162,19 +162,19 @@ test('cheating finishes with dsq', expect => {
 	const v0 = vector(-1, 0);
 	const v1 = vector(0, 2);
 	expect.plan(6);
-	run(the_track, {player: () => Promise.resolve(move(p0)(v0)), starting_position: p0})
+	run(the_track, {player: () => Promise.resolve(move(p0, v0)), starting_position: p0})
 		.onFinish(({winner, turn, final}) => {
 			expect.deepEquals(winner, [], 'Moving out of bounds doesn\'t produce a winner')
 			expect.deepEquals(final[0].dsq, 'Illegal move', 'Moving out of bounds disqualifies')
 		})
 		.onError(reason => expect.fail('Shouldn\'t give ' + reason))
-	run(the_track, {player: () => Promise.resolve(move(p0)(v1)), starting_position: p0})
+	run(the_track, {player: () => Promise.resolve(move(p0, v1)), starting_position: p0})
 		.onFinish(({winner, turn, final}) => {
 			expect.deepEquals(winner, [], 'Ineligeble moves doesn\'t produce a winner')
 			expect.deepEquals(final[0].dsq, 'Illegal move', 'Ineligble moves disqualifies')
 		})
 		.onError(reason => expect.fail('Shouldn\'t give ' + reason))
-	run(the_track, {player: () => Promise.resolve(move(p1)(v1)), starting_position: p0})
+	run(the_track, {player: () => Promise.resolve(move(p1, v1)), starting_position: p0})
 		.onFinish(({winner, turn, final}) => {
 			expect.deepEquals(winner, [], 'Teleporting doesn\'t produce a winner')
 			expect.deepEquals(final[0].dsq, 'Illegal move', 'Teleporting disqualifies')

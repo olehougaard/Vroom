@@ -86,18 +86,18 @@ test('position at the end of a velocity', expect => {
 });
 
 test('move create', expect => {
-	expect.deepEquals(move(position(2, 5))(vector(5, -2)).start, position(2, 5), 'start is the first argument to factory');
-	expect.deepEquals(move(position(2, 5))(vector(5, -2)).velocity, vector(5, -2), 'velocity is the second argument to factory');
-	expect.deepEquals(move(position(2, 5))(vector(5, -2)).end, position(7, 3), 'end is the the result of moving velocity from start');
-	expect.true(move(position(2, 5))(vector(5, -2)).is_move, 'Moves are moves');
+	expect.deepEquals(move(position(2, 5), vector(5, -2)).start, position(2, 5), 'start is the first argument to factory');
+	expect.deepEquals(move(position(2, 5), vector(5, -2)).velocity, vector(5, -2), 'velocity is the second argument to factory');
+	expect.deepEquals(move(position(2, 5), vector(5, -2)).end, position(7, 3), 'end is the the result of moving velocity from start');
+	expect.true(move(position(2, 5), vector(5, -2)).is_move, 'Moves are moves');
 });
 
 test('path', expect => {
 	expect.deepEquals(path(position(2, 5), vector(1, 0), vector(2, -3), vector(), vector(9, 9)),
-	   [move(position(2, 5))(vector(1, 0)),
-	    move(position(3, 5))(vector(2, -3)),
-		move(position(5, 2))(vector()),
-		move(position(5, 2))(vector(9, 9))
+	   [move(position(2, 5), vector(1, 0)),
+	    move(position(3, 5), vector(2, -3)),
+		move(position(5, 2), vector()),
+		move(position(5, 2), vector(9, 9))
 	   ], 'path starts at position and follows the vectors');
 })
 
@@ -110,7 +110,7 @@ test('line length', expect => {
 });
 
 test('move.line()', expect => {
-	expect.deepEquals(move(position(2, 5))(vector(5, -2)).line(), line(2.5, 5.5)(5, -2), 'moves are from center of square to center of square');
+	expect.deepEquals(move(position(2, 5), vector(5, -2)).line(), line(2.5, 5.5)(5, -2), 'moves are from center of square to center of square');
 });
 
 test('rectangle', expect => {
@@ -175,23 +175,23 @@ test('out of bounds', expect => {
 });
 
 test('intersects', expect => {
-	expect.false(the_track.intersects(move(position(1, 0))(vector())), 'Staying on the track doesn\'t intersect');
-	expect.true(the_track.intersects(move(position(0, 1))(vector())), 'Staying out of the track intersects');
-	expect.false(the_track.intersects(move(position(1, 0))(vector(0, 1))), 'Moving to neighbouring open positions doesn\'t intersect');
-	expect.true(the_track.intersects(move(position(1, 0))(vector(-1, 1))), 'Moving out of the track intersects');
-	expect.false(the_track.intersects(move(position(1, 0))(vector(3, 3))), 'Moving through spaces doesn\'t intersect');
-	expect.false(the_track.intersects(move(position(2, 0))(vector(3, 3))), 'Just touching out of bounds doesn\'t intersect');
-	expect.true(the_track.intersects(move(position(2, 0))(vector(5, 0))), 'Moving from track to track intersects when going through out of bounds');
-	expect.true(the_track.intersects(move(position())(vector(-1, -1))), 'Moving further of the track intersects');
+	expect.false(the_track.intersects(move(position(1, 0), vector())), 'Staying on the track doesn\'t intersect');
+	expect.true(the_track.intersects(move(position(0, 1), vector())), 'Staying out of the track intersects');
+	expect.false(the_track.intersects(move(position(1, 0), vector(0, 1))), 'Moving to neighbouring open positions doesn\'t intersect');
+	expect.true(the_track.intersects(move(position(1, 0), vector(-1, 1))), 'Moving out of the track intersects');
+	expect.false(the_track.intersects(move(position(1, 0), vector(3, 3))), 'Moving through spaces doesn\'t intersect');
+	expect.false(the_track.intersects(move(position(2, 0), vector(3, 3))), 'Just touching out of bounds doesn\'t intersect');
+	expect.true(the_track.intersects(move(position(2, 0), vector(5, 0))), 'Moving from track to track intersects when going through out of bounds');
+	expect.true(the_track.intersects(move(position(), vector(-1, -1))), 'Moving further of the track intersects');
 });
 
 test('reaches goal', expect => {
-	expect.false(the_track.finish(move(position(7, 0))(vector())), 'You need to move to finish');
-	expect.true(the_track.finish(move(position(7, 1))(vector(0, -1))), 'Moving to the finish line finishes');
-	expect.true(the_track.finish(move(position(7, 1))(vector(0, -2))), 'Moving through the finish line finishes');
-	expect.false(the_track.finish(move(position(7, 2))(vector(0, -1))), 'Moving short of the the finish line doesn\'t finish');
-	expect.false(the_track.finish(move(position(8, 2))(vector(0, -2))), 'Moving from out of bounds doesn\'t finish');
-	expect.false(the_track.finish(move(position(3, 2))(vector(5, -3))), 'Moving through out of bounds doesn\'t finish');
+	expect.false(the_track.finish(move(position(7, 0), vector())), 'You need to move to finish');
+	expect.true(the_track.finish(move(position(7, 1), vector(0, -1))), 'Moving to the finish line finishes');
+	expect.true(the_track.finish(move(position(7, 1), vector(0, -2))), 'Moving through the finish line finishes');
+	expect.false(the_track.finish(move(position(7, 2), vector(0, -1))), 'Moving short of the the finish line doesn\'t finish');
+	expect.false(the_track.finish(move(position(8, 2), vector(0, -2))), 'Moving from out of bounds doesn\'t finish');
+	expect.false(the_track.finish(move(position(3, 2), vector(5, -3))), 'Moving through out of bounds doesn\'t finish');
 });
 
 const disconnected_track_spec = [

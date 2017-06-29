@@ -19,7 +19,7 @@ test('Straight line', expect => {
     expect.deepEquals(track.size, size, 'Obeys size')
     expect.true(track.in_bounds(position(0, 3)))
     expect.true(track.in_bounds(position(10, 8)))
-    expect.false(track.intersects(move(position(0, 3))(vector(10, 5))), 'The original line is free')
+    expect.false(track.intersects(move(position(0, 3), vector(10, 5))), 'The original line is free')
     expect.deepEquals(starting_positions, [position(0, 1), position(0, 2), position(0, 3), position(0, 4), position(0, 5)])
-    expect.true(track.finish(move(position(9, 8))(vector(1, 0))))
+    expect.true(track.finish(move(position(9, 8), vector(1, 0))))
 });

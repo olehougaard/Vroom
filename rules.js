@@ -29,13 +29,13 @@ module.exports = (vector, move) => {
     vector(-1, -1), vector(0, -1), vector(1, -1)];
   const next_moves = track => mv =>
     ({ possible_moves: moves
-        .map(v => move(mv.end)(mv.velocity.plus(v)))
+        .map(v => move(mv.end, mv.velocity.plus(v)))
         .filter(is_legal(track)),
-       default_move: move(mv.end)(mv.velocity)
+       default_move: move(mv.end, mv.velocity)
     });
   const filter_index = (p) =>(a) => a.map((e, i) => ({e, i})).filter(({e, i}) => p(e, i, a)).map(({e, i}) => i)
   const run = (track, ...players) => {
-    const state = players.map(player => ({is_live: true, player: player.player, move: move(player.starting_position)(vector())}))
+    const state = players.map(player => ({is_live: true, player: player.player, move: move(player.starting_position, vector())}))
     return stream({state, turn: 1})(({state, turn}, recur, error, finish) => {
       Promise.all(state.map(seed => {
         if (!seed.is_live) return Promise.resolve(seed)
