@@ -42,12 +42,15 @@ module.exports = (vector, move) => {
     const state = players.map(player => ({is_live: true, player: player.player, move: move(player.starting_position, vector())}))
     return stream({state, turn: 1})(({state, turn}, recur, error, finish) => {
       Promise.all(state.map(seed => {
+        // Non-live players stay where they are until the game is resolved:
         if (!seed.is_live) return Promise.resolve(seed)
         const {move, player} = seed
         const next = next_moves(track)(move)
+        // Note: If the player has no legal moves an empty moveset is still fed to the player to
+        // allow the UI to notify the player.
         return player(next).then(move=> {
           if (next.possible_moves.length === 0) return {dnf: 'Crashed', is_live: false }
-          if (next.possible_moves.every(m => !m.equals(move))) return { dsq: 'Illegal move', is_live: false }
+          if (!next.possible_moves.some(move.equals)) return { dsq: 'Illegal move', is_live: false }
           return { is_live: true, move, player}
         })
       }))
