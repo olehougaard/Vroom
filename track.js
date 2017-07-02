@@ -4,23 +4,20 @@
 
 const generic_equals = (values) => (that) => {
 	return that && Object.getOwnPropertyNames(values).reduce((eq, key) => eq && (values[key].equals? values[key].equals(that[key]) : values[key] === that[key]), true);
-};
+}
+
+const derive = (proto, ...mixins) => Object.assign(Object.create(proto), ...mixins)
 
 const value_object = (values, prototype) => {
-	prototype = prototype || Object.prototype;
-	const properties = {};
-	Object.getOwnPropertyNames(values).forEach((key) => {
-		properties[key] = { value: values[key], enumerable: true, writable: false };
-	});
-	properties.equals = {value: generic_equals(values), enumerable: false, writable: false};
-	const obj = Object.create(prototype, properties);
-	return obj;
-};
+	const comparable = { equals: generic_equals(values) }
+	const proto = derive(comparable, prototype || Object.prototype)
+	return derive(proto, values)
+}
 
 module.exports = (() => {
 	let position, vector, move, path, line, rectangle, track_from_string_array;
 
-	position = (x, y) => value_object({x: x||0, y: y|| 0}, {
+	position = (x, y) => value_object({x: x || 0, y: y || 0}, {
 		north() {
 			return position(this.x, this.y + 1);
 		},

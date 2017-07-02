@@ -32,13 +32,6 @@ test('equal positions', expect => {
 	expect.false(position().equals(undefined), 'Defined doesn\'t equals undefined');
 });
 
-test('immutable', expect => {
-	'use strict';
-	const p = position(3, 7);
-	expect.throws(() => p.x = 2, 'x is unassignable');
-	expect.throws(() => p.y = 2, 'y is unassignable');
-});
-
 test('directions', expect => {
 	const p = position(3, 7);
 	expect.deepEquals(p.north(), position(3, 8), 'North is 1 up');
