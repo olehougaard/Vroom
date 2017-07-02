@@ -1,22 +1,26 @@
+const EventEmitter = require('events')
+
 module.exports = (vector, move) => {
-  const seq = (...fs) => (...args) => fs.forEach(f => f(...args))
   const stream = (seed) => (generator) => {
-    let error = () => {}
-    let finish = () => {}
-    let recur = (value, seed) => setImmediate(() => continuation(seed, generator))
-    const continuation = (seed, generator) => setImmediate(() => generator(seed, recur, error, finish))
-    continuation(seed, generator)
+    const emitter = new EventEmitter()
+    const error = (...args) => emitter.emit('error', ...args)
+    const finish = (...args) => emitter.emit('finish', ...args)
+    const recur = (value, seed) => { 
+      emitter.emit('value', value, seed)
+      setImmediate(() => generator(seed, recur, error, finish))
+    }
+    setImmediate(() => generator(seed, recur, error, finish))
     return {
       onValue(callback) {
-        recur = seq(callback, recur)
+        emitter.on('value', callback)
         return this
       },
       onError(callback) {
-        error = seq(callback, error)
+        emitter.on('error', callback)
         return this
       },
       onFinish(callback) {
-        finish = seq(callback, finish)
+        emitter.on('finish', callback)
         return this
       }
     }
