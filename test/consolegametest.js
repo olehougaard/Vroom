@@ -1,11 +1,11 @@
-const tape = require('tape');
+const tape = require('tape')
 const test = (description, test_function) => {
 	tape(description, (expect) => {
-		test_function(expect);
-		if (!expect._plan) expect.end();
-	});
-};
-test.skip = tape.skip;
+		test_function(expect)
+		if (!expect._plan) expect.end()
+	})
+}
+test.skip = tape.skip
 const { position, vector, move, track_from_string_array} = require('../track.js')
 const { is_legal, next_moves, run } = require('../rules.js')(vector, move)
 const consolegame = require('../consolegame.js')
@@ -33,24 +33,24 @@ const mock_console = expect => {
             return {
                 tell(message) {
                     const {tell, question, description} = expectations.shift()
-                    expect.false(closed, 'Operation not called on closed console');
+                    expect.false(closed, 'Operation not called on closed console')
                     if (question) {
-                        expect.equal(question, undefined, 'Expected ask ' + question + '\nGot tell ' + message);
+                        expect.equal(question, undefined, 'Expected ask ' + question + '\nGot tell ' + message)
                     } else {
-                        expect.notEqual(tell, undefined, 'Expected tell');
+                        expect.notEqual(tell, undefined, 'Expected tell')
                     }
-                    expect.equals(message, tell, description);
+                    expect.equals(message, tell, description)
                 },
                 ask(message) {
                     const {question, answer, tell, description} = expectations.shift()
-                    expect.false(closed, 'Operation not called on closed console');
+                    expect.false(closed, 'Operation not called on closed console')
                     if (tell) {
-                        expect.equal(tell, undefined, 'Expected tell ' + tell + '\nGot ask ' + message);
+                        expect.equal(tell, undefined, 'Expected tell ' + tell + '\nGot ask ' + message)
                     } else {
-                        expect.notEqual(question, undefined, 'Expected ask');
+                        expect.notEqual(question, undefined, 'Expected ask')
                     }
-                    expect.equals(message, question, description);
-                    return answer? Promise.resolve(answer) : Promise.reject('Cancelled');
+                    expect.equals(message, question, description)
+                    return answer? Promise.resolve(answer) : Promise.reject('Cancelled')
                 },
                 close() {
                     expect.false(closed, 'Close was called exactly once')
@@ -72,17 +72,17 @@ const track_spec = [
 	'X   XX   X',
 	'X  XXXX  X',
 	'X  XXXX  X'
-];
-const the_track = track_from_string_array(track_spec, [position(7, 0), position(8, 0)]);
+]
+const the_track = track_from_string_array(track_spec, [position(7, 0), position(8, 0)])
 const track_printer = () => {
     const track = track_spec.slice().reverse()
     return {
         toString() {
-            return track.reverse().join('\n');
+            return track.reverse().join('\n')
         },
         splice(y, x, ...values) {
             track[y] = track[y].slice(0, x).concat(values.join(''), track[y].slice(x + values.length))
-            return this;
+            return this
         }
     }.splice(0, 7, '-', '-')
 }
@@ -97,7 +97,7 @@ test('The short run', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', '3', 'Game prompts for move')
     console.expect_tell(track_printer().splice(0, 8, '#').toString(), 'Game shows game state')
-    console.expect_tell('You won in 1 turn', 'Came reports result');
+    console.expect_tell('You won in 1 turn', 'Came reports result')
     const game = consolegame(run)(() => ({ track: the_track, starting_position }))
     game.run(console.run())
 })
@@ -118,7 +118,7 @@ test('Won in two', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', '3', 'Game prompts for move')
     console.expect_tell(track_printer().splice(0, 8, '#').toString(), 'Game shows game state')
-    console.expect_tell('You won in 2 turns', 'Came reports result');
+    console.expect_tell('You won in 2 turns', 'Came reports result')
     const game = consolegame(run)(() => ({ track: the_track, starting_position }))
     game.run(console.run())
 })

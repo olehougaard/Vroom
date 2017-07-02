@@ -47,7 +47,7 @@ module.exports = ((position) => {
                     return line(from.plus(vector), to.plus(vector))
                 }
             })   
-            return the_line;
+            return the_line
         }
     return {
         line

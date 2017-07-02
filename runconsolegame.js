@@ -36,7 +36,7 @@ const track_spec = [
 	'X   XX   X',
 	'X  XXXX  X',
 	'X  XXXX  X'
-];
-const the_track = track(track_spec, [position(7, 0), position(8, 0)]);
+]
+const the_track = track(track_spec, [position(7, 0), position(8, 0)])
 
 consolegame(run)(() => ({ track: the_track, starting_position: position(2, 0) })).run(real_console(process))

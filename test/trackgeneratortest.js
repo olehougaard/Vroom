@@ -1,11 +1,11 @@
-const tape = require('tape');
+const tape = require('tape')
 const test = (description, test_function) => {
 	tape(description, (expect) => {
-		test_function(expect);
-		if (!expect._plan) expect.end();
-	});
-};
-test.skip = tape.skip;
+		test_function(expect)
+		if (!expect._plan) expect.end()
+	})
+}
+test.skip = tape.skip
 
 const {position, move, track, vector} = require('../track.js')
 const trackgenerator = require('../trackgenerator.js')(track, vector)
@@ -22,4 +22,4 @@ test('Straight line', expect => {
     expect.false(track.intersects(move(position(0, 3), vector(10, 5))), 'The original line is free')
     expect.deepEquals(starting_positions, [position(0, 1), position(0, 2), position(0, 3), position(0, 4), position(0, 5)])
     expect.true(track.finish(move(position(9, 8), vector(1, 0))))
-});
+})
