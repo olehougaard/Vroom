@@ -13,7 +13,7 @@ module.exports = ((position) => {
             Object.assign(the_line, {
                 length:  geometric_length + 1,
                 contains(position) {
-                    return this.some(p => p.equals(position))
+                    return the_line.some(p => p.equals(position))
                 },
                 is_left(position) {
                     return relative(position).v >= 0

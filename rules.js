@@ -9,21 +9,21 @@ module.exports = (vector, move) => {
       emitter.emit('value', value, seed)
       setImmediate(() => generator(seed, recur, error, finish))
     }
-    setImmediate(() => generator(seed, recur, error, finish))
-    return {
-      onValue(callback) {
+    const the_stream = {}
+    the_stream.onValue = (callback) => {
         emitter.on('value', callback)
-        return this
-      },
-      onError(callback) {
-        emitter.on('error', callback)
-        return this
-      },
-      onFinish(callback) {
-        emitter.on('finish', callback)
-        return this
-      }
+        return the_stream
     }
+    the_stream.onError = (callback) => {
+        emitter.on('error', callback)
+        return the_stream
+    }
+    the_stream.onFinish = (callback) => {
+        emitter.on('finish', callback)
+        return the_stream
+    }
+    setImmediate(() => generator(seed, recur, error, finish))
+    return the_stream
   }
 
   const is_legal = track => m => track.finish(m) || !track.intersects(m)

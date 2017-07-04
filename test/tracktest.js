@@ -82,7 +82,6 @@ test('move create', expect => {
 	expect.deepEquals(move(position(2, 5), vector(5, -2)).start, position(2, 5), 'start is the first argument to factory')
 	expect.deepEquals(move(position(2, 5), vector(5, -2)).velocity, vector(5, -2), 'velocity is the second argument to factory')
 	expect.deepEquals(move(position(2, 5), vector(5, -2)).end, position(7, 3), 'end is the the result of moving velocity from start')
-	expect.true(move(position(2, 5), vector(5, -2)).is_move, 'Moves are moves')
 })
 
 test('path', expect => {
