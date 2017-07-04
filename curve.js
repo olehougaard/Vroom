@@ -10,7 +10,7 @@ module.exports = ((position) => {
             }
             const the_line = Array.apply(null, Array(geometric_length + 1)).map((_, i) => index_to_position(i))
             const relative = (p) => transform(to.minus(from))(p.minus(from))
-            Object.assign(the_line, {
+            const prototype = Object.assign(Object.create(Array.prototype), {
                 length:  geometric_length + 1,
                 contains(position) {
                     return the_line.some(p => p.equals(position))
@@ -46,7 +46,8 @@ module.exports = ((position) => {
                 displace(vector) {
                     return line(from.plus(vector), to.plus(vector))
                 }
-            })   
+            })
+            Object.setPrototypeOf(the_line, prototype)   
             return the_line
         }
     return {
