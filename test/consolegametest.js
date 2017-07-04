@@ -76,15 +76,16 @@ const track_spec = [
 const the_track = track_from_string_array(track_spec, [position(7, 0), position(8, 0)])
 const track_printer = () => {
     const track = track_spec.slice().reverse()
-    return {
+    const printer = {
         toString() {
             return track.reverse().join('\n')
         },
         splice(y, x, ...values) {
             track[y] = track[y].slice(0, x).concat(values.join(''), track[y].slice(x + values.length))
-            return this
+            return printer
         }
-    }.splice(0, 7, '-', '-')
+    }
+    return printer.splice(0, 7, '-', '-')
 }
 
 test('The short run', expect => {
