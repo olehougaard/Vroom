@@ -9,10 +9,10 @@ test.skip = tape.skip
 
 const {position, move, track, vector} = require('../track.js')
 const trackgenerator = require('../trackgenerator.js')(track, vector)
-const curve = require('../curve.js')(position)
+const curve = require('../curve.js')
 
 test('Straight line', expect => {
-    const line = curve.line(position(0, 3), position(10, 8))
+    const line = curve.straight(position(0, 3), position(10, 8))
     const width = 4
     const size = { width: 11, height: 11 }
     const { track, starting_positions } = trackgenerator.from_curve(size, line, width)

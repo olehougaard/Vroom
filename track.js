@@ -51,6 +51,9 @@ module.exports = (() => {
 			plus(that) {
 				return vector(dx + that.dx, dy + that.dy)
 			},
+			minus(that) {
+				return vector(dx - that.dx, dy - that.dy)
+			},
 			multiply(t) {
 				return vector(t * dx, t * dy)
 			},
@@ -92,10 +95,19 @@ module.exports = (() => {
 	}
 
 	line = (x, y) => (dx, dy) => {
+		const length = () => Math.sqrt(dx * dx + dy * dy)
+		const distance_to = p => {
+			const unit_vector = vector(dx, dy).multiply(1/length())
+			const relative_vector = position(p.x, p.y).minus(position(x, y))
+			const relative_projected = unit_vector.multiply(relative_vector.dot(unit_vector))
+			const vector_to_line = relative_vector.minus(relative_projected)
+			return vector_to_line.length()
+		}
 		const prototype = {
 			length() {
 				return Math.sqrt(dx * dx + dy * dy)
 			},
+			distance_to,
 			equals(that) {
 				return that && x === that.x && y === that.y && dx === that.dx && dy === that.dy
 			}

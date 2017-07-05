@@ -1,19 +1,26 @@
-module.exports = ((position) => {
+const { line, position } = require('./track.js')
+
+module.exports = (() => {
     // Transforms vec into coordinates of the system (base.dx, base.dy)
     const transform = base => vec => ({ u: base.dot(vec) / base.dot(base), v : vec.dot(base.normal()) / base.dot(base) })
-    const line = (from, to) => {
+    const straight = (from, to) => {
             const geometric_length = Math.floor(to.minus(from).length())
             const unit = to.minus(from).multiply(1 / geometric_length)
             const index_to_position = (i) => {
                 const {x, y} = from.plus(unit.multiply(i))
                 return position(Math.round(x), Math.round(y))
             }
-            const the_line = Array.apply(null, Array(geometric_length + 1)).map((_, i) => index_to_position(i))
-            const relative = (p) => transform(to.minus(from))(p.minus(from))
+            const positions = Array.apply(null, Array(geometric_length + 1)).map((_, i) => index_to_position(i))
+            const base_vector = to.minus(from)
+            const ln = line(from.x, from.y)(base_vector.dx, base_vector.dy)
+            const relative = (p) => transform(base_vector)(p.minus(from))
             const prototype = Object.assign(Object.create(Array.prototype), {
                 length:  geometric_length + 1,
+                distance_to(position) {
+                    return ln.distance_to(position)
+                },
                 contains(position) {
-                    return the_line.some(p => p.equals(position))
+                    return positions.some(p => p.equals(position))
                 },
                 is_left(position) {
                     return relative(position).v >= 0
@@ -44,13 +51,13 @@ module.exports = ((position) => {
                     height: Math.abs(from.y - to.y)
                 },
                 displace(vector) {
-                    return line(from.plus(vector), to.plus(vector))
+                    return straight(from.plus(vector), to.plus(vector))
                 }
             })
-            Object.setPrototypeOf(the_line, prototype)   
-            return the_line
+            Object.setPrototypeOf(positions, prototype)   
+            return positions
         }
     return {
-        line
+        straight
     }
-})
+})()
