@@ -17,6 +17,8 @@ const curve_axioms = [
     c => increasing(c.map(p => p.minus(c.start()).length())),
     c => c.every(c.contains),
     c => c.contains(c.start()) && c.contains(c.end()),
+    c => c.outer(2).every(c.is_left),
+    c => c.inner(2).every(c.is_right),
 ]
 
 const shortest = curve.straight(position(0, 0), position(0, 0))
@@ -97,15 +99,40 @@ test('angled line', expect => {
     expect.true(curve_axioms.every(a => a(line)))    
 })
 
-test('displace', expect => {
+test('lines have defined start and end', expect => {
+    const line = curve.straight(position(0, 0), position(4, 2))
+    expect.deepEquals(line.start(), position(0, 0))
+    expect.deepEquals(line.end(), position(4, 2))
+})
+
+test('(straight) displace moves in parallel', expect => {
     const line = curve.straight(position(0, 0), position(4, 2))
     const expected = curve.straight(position(0, 1), position(4, 3))
     expect.deepEquals(line.displace(vector(0, 1)).length, expected.length)
     expect.true(line.displace(vector(0, 1)).every((e, i) => e.equals(expected[i])))
 })
 
-test('lines have defined start and end', expect => {
-    const line = curve.straight(position(0, 0), position(4, 2))
-    expect.deepEquals(line.start(), position(0, 0))
-    expect.deepEquals(line.end(), position(4, 2))
+test('half circle hits the expected points', expect => {
+    const half_circle = curve.arc(position(0, 0), Math.PI / 2, position(8, 0), 3 * Math.PI / 2)
+    expect.deepEquals(position(0, 0), half_circle.start(), 'Starts at the given start')
+    expect.deepEquals(position(8, 0), half_circle.end(), 'Ends at the given end')
+    expect.true(half_circle.contains(position(4, 4)), 'Top point is contained')
+    expect.false(half_circle.contains(position(4, 0)), 'Half circle does not pass through center')
+    expect.false(half_circle.contains(position(4, -4)), 'Bottom point is not contained')
 })
+
+test('Reverse half circle hits the expected points', expect => {
+    const half_circle = curve.arc(position(0, 0), 3 * Math.PI / 2, position(8, 0), Math.PI / 2)
+    expect.false(half_circle.contains(position(4, 4)), 'Top point is not contained')
+    expect.true(half_circle.contains(position(4, -4)), 'Bottom point is contained')
+})
+
+test('ajar half circle hits the expected points', expect => {
+    const sqrt1_2 = Math.sqrt(1/2)
+    const half_circle = curve.arc(position(4 * (1-sqrt1_2), 4*sqrt1_2), Math.PI / 4, position(4*(1+sqrt1_2), -4 * sqrt1_2), 5 * Math.PI / 4)
+    expect.true(half_circle.contains(position(4*(1+sqrt1_2), 4 * sqrt1_2)), 'Top point is contained')
+    expect.false(half_circle.contains(position(0, 0)), 'Early point is not contained')
+    expect.true(half_circle.contains(position(8, 0)), '3/4 point is contained')
+    expect.false(half_circle.contains(position(4, -4)), 'Late point is not contained')
+})
+

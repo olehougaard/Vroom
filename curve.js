@@ -14,6 +14,7 @@ module.exports = (() => {
             const base_vector = to.minus(from)
             const ln = line(from.x, from.y)(base_vector.dx, base_vector.dy)
             const relative = (p) => transform(base_vector)(p.minus(from))
+            const displace = (vector) => straight(from.plus(vector), to.plus(vector))
             const prototype = Object.assign(Object.create(Array.prototype), {
                 length:  geometric_length + 1,
                 distance_to(position) {
@@ -50,14 +51,39 @@ module.exports = (() => {
                     width: Math.abs(from.x - to.x),
                     height: Math.abs(from.y - to.y)
                 },
-                displace(vector) {
-                    return straight(from.plus(vector), to.plus(vector))
-                }
+                displace,
+                outer(dist) {
+                    return displace(base_vector.normal().multiply(dist / base_vector.length()))
+                },
+                inner(dist) {
+                    return displace(base_vector.normal().multiply(-dist / base_vector.length()))
+                },
             })
             Object.setPrototypeOf(positions, prototype)   
             return positions
         }
-    return {
-        straight
+    const arc = (start, angle_in, end, angle_out) => {
+        const center_vector = end.minus(start).multiply(.5)
+        const center = start.plus(center_vector)
+        const { r: r_start, phi: phi_start } = start.minus(center).to_polar()
+        const { r: r_end, phi: phi_end } = end.minus(center).to_polar()
+        const angle_distance = (phi) => {
+            // if angle_in > phi_start we are running in the positive direction
+            const delta_phi = angle_in > phi_start ? phi - phi_start : phi_start - phi
+            return delta_phi < 0 ? delta_phi + 2 * Math.PI : delta_phi
+        }
+        const running_distance = angle_distance(phi_end)
+        const a = center_vector.length()
+        const b = center_vector.length()
+        return {
+            contains(p) {
+                const { dx, dy } = p.minus(center)
+                const { r, phi } = p.minus(center).to_polar()
+                return Math.abs(dx * dx / (a * a) + dy * dy / (b * b) - 1) <= .5 && angle_distance(phi) <= running_distance
+            },
+            start() { return start },
+            end() { return end }
+        }
     }
+    return { straight, arc }
 })()

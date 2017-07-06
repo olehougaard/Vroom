@@ -65,11 +65,28 @@ module.exports = (() => {
 			},
 			equals(that) {
 				return that && that.dx === dx && that.dy === dy
+			},
+			to_polar() {
+				const r = Math.sqrt(dx * dx + dy * dy)
+				if (dx === 0 && dy === 0)
+					return { r, phi: 0 }
+				else if (dx === 0 && dy > 0)
+					return { r, phi: Math.PI / 2 }
+				else if (dx === 0 && dy < 0)
+					return { r, phi: 3 * Math.PI / 2 }
+				else {
+					let phi = Math.atan(dy / dx)
+					if (dx < 0) 
+						phi += Math.PI
+					else if (dy < 0)
+					    phi += 2 * Math.PI
+					return { r, phi }
+				} 
 			}
 		}
 		return Object.assign(Object.create(prototype), {dx, dy})
 	}
-
+	vector.from_polar = ({ r, phi }) => vector(r * Math.cos(phi), r * Math.sin(phi))
 
 	move = (origin, velocity) => {
 		const prototype = {
