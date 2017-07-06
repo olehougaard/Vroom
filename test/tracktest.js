@@ -5,6 +5,13 @@
 const _test = require('tape')
 const test = (description, test_function) => {
 	_test(description, (expect) => {
+		expect.approximatelyEquals = (actual, expected, tolerance, message) => {
+			if (!message) {
+				message = tolerance
+				tolerance = 1e-10
+			}
+			expect.true(Math.abs(actual - expected) < tolerance, message)
+		}
 		test_function(expect)
 		expect.end()
 	})
@@ -99,6 +106,11 @@ test('line', expect => {
 
 test('line length', expect => {
 	expect.equals(line(0, 0)(3,4).length(), 5, 'line length is Pythagoras')
+})
+
+test('distance to line', expect => {
+	expect.approximatelyEquals(line(0, 0)(3, 3).distance_to({ x: 1, y: 1}), 0, 'Points on line have zero distance')
+	expect.approximatelyEquals(line(0, 0)(3, 3).distance_to({ x: 0, y: 2}), Math.sqrt(2), 'Distance is measured as the perpendicular distance')
 })
 
 test('move.line()', expect => {

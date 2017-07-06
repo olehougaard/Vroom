@@ -51,6 +51,9 @@ module.exports = (() => {
 			plus(that) {
 				return vector(dx + that.dx, dy + that.dy)
 			},
+			minus(that) {
+				return vector(dx - that.dx, dy - that.dy)
+			},
 			multiply(t) {
 				return vector(t * dx, t * dy)
 			},
@@ -62,11 +65,28 @@ module.exports = (() => {
 			},
 			equals(that) {
 				return that && that.dx === dx && that.dy === dy
+			},
+			to_polar() {
+				const r = Math.sqrt(dx * dx + dy * dy)
+				if (dx === 0 && dy === 0)
+					return { r, phi: 0 }
+				else if (dx === 0 && dy > 0)
+					return { r, phi: Math.PI / 2 }
+				else if (dx === 0 && dy < 0)
+					return { r, phi: 3 * Math.PI / 2 }
+				else {
+					let phi = Math.atan(dy / dx)
+					if (dx < 0) 
+						phi += Math.PI
+					else if (dy < 0)
+					    phi += 2 * Math.PI
+					return { r, phi }
+				} 
 			}
 		}
 		return Object.assign(Object.create(prototype), {dx, dy})
 	}
-
+	vector.from_polar = ({ r, phi }) => vector(r * Math.cos(phi), r * Math.sin(phi))
 
 	move = (origin, velocity) => {
 		const prototype = {
@@ -92,10 +112,19 @@ module.exports = (() => {
 	}
 
 	line = (x, y) => (dx, dy) => {
+		const length = () => Math.sqrt(dx * dx + dy * dy)
+		const distance_to = p => {
+			const unit_vector = vector(dx, dy).multiply(1/length())
+			const relative_vector = position(p.x, p.y).minus(position(x, y))
+			const relative_projected = unit_vector.multiply(relative_vector.dot(unit_vector))
+			const vector_to_line = relative_vector.minus(relative_projected)
+			return vector_to_line.length()
+		}
 		const prototype = {
 			length() {
 				return Math.sqrt(dx * dx + dy * dy)
 			},
+			distance_to,
 			equals(that) {
 				return that && x === that.x && y === that.y && dx === that.dx && dy === that.dy
 			}
