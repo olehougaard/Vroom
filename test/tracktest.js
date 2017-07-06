@@ -4,6 +4,13 @@
 
 const _test = require('tape')
 const test = (description, test_function) => {
+	const approximateDeepEqual = (actual, expected, tolerance) => {
+		if (typeof actual === 'number') {
+			return Math.abs((actual - expected) / expected) < tolerance
+		} else {
+			return Object.getOwnPropertyNames(actual).every(n => approximateDeepEqual(actual[n], expected[n], tolerance))
+		}
+	}
 	_test(description, (expect) => {
 		expect.approximatelyEquals = (actual, expected, tolerance, message) => {
 			if (!message) {
@@ -11,6 +18,13 @@ const test = (description, test_function) => {
 				tolerance = 1e-10
 			}
 			expect.true(Math.abs(actual - expected) < tolerance, message)
+		}
+		expect.approximateDeepEquals = (actual, expected, tolerance, message) => {
+			if (!message) {
+				message = tolerance
+				tolerance = 1e-10
+			}
+			expect.true(approximateDeepEqual(actual, expected, tolerance), message)
 		}
 		test_function(expect)
 		expect.end()
@@ -75,6 +89,22 @@ test('dot product', expect => {
 
 test('rotate', expect => {
 	expect.deepEquals(vector(2, 3).normal(), vector(-3, 2), 'Rotate left')
+})
+
+test('To polar', expect => {
+	expect.deepEquals(vector().to_polar(), { r: 0, phi: 0}, 'Zero-vector has 0 angle')
+	expect.deepEquals(vector(2, 2).to_polar(), { r: Math.sqrt(8), phi: Math.PI / 4 }, '1st quadrant conversion')
+	expect.deepEquals(vector(-2, 2).to_polar(), { r: Math.sqrt(8), phi: 3 * Math.PI / 4}, '2nd quadrant conversion')
+	expect.deepEquals(vector(-2, -2).to_polar(), { r: Math.sqrt(8), phi: 5 * Math.PI / 4}, '3rd quadrant conversion')
+	expect.deepEquals(vector(2, -2).to_polar(), { r: Math.sqrt(8), phi: 7 * Math.PI / 4}, '4th quadrant conversion')
+})
+
+test('To polar', expect => {
+	expect.deepEquals(vector.from_polar({ r: 0, phi: 2}), vector(), 'Zero-vector')
+	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: Math.PI / 4 }), vector(2, 2), '1st quadrant conversion')
+	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: 3 * Math.PI / 4}), vector(-2, 2), '2nd quadrant conversion')
+	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: 5 * Math.PI / 4}), vector(-2, -2), '3rd quadrant conversion')
+	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: 7 * Math.PI / 4}), vector(2, -2), '4th quadrant conversion')
 })
 
 test('velocity between positions', expect => {
