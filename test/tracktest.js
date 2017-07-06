@@ -105,6 +105,7 @@ test('To polar', expect => {
 	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: 3 * Math.PI / 4}), vector(-2, 2), '2nd quadrant conversion')
 	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: 5 * Math.PI / 4}), vector(-2, -2), '3rd quadrant conversion')
 	expect.approximateDeepEquals(vector.from_polar({ r: Math.sqrt(8), phi: 7 * Math.PI / 4}), vector(2, -2), '4th quadrant conversion')
+	expect.approximateDeepEquals(vector.from_polar({phi: Math.PI / 4}), vector(Math.sqrt(.5), Math.sqrt(.5)), 'Unit vector')
 })
 
 test('velocity between positions', expect => {

@@ -86,7 +86,7 @@ module.exports = (() => {
 		}
 		return Object.assign(Object.create(prototype), {dx, dy})
 	}
-	vector.from_polar = ({ r, phi }) => vector(r * Math.cos(phi), r * Math.sin(phi))
+	vector.from_polar = ({ r = 1, phi }) => vector(r * Math.cos(phi), r * Math.sin(phi))
 
 	move = (origin, velocity) => {
 		const prototype = {
