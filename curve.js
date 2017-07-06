@@ -63,6 +63,7 @@ module.exports = (() => {
             return positions
         }
     const arc = (start, angle_in, end, angle_out) => {
+        const {abs, PI} = Math
         const center_vector = end.minus(start).multiply(.5)
         const center = start.plus(center_vector)
         const { r: r_start, phi: phi_start } = start.minus(center).to_polar()
@@ -70,16 +71,17 @@ module.exports = (() => {
         const angle_distance = (phi) => {
             // if angle_in > phi_start we are running in the positive direction
             const delta_phi = angle_in > phi_start ? phi - phi_start : phi_start - phi
-            return delta_phi < 0 ? delta_phi + 2 * Math.PI : delta_phi
+            return delta_phi < 0 ? delta_phi + 2 * PI : delta_phi
         }
         const running_distance = angle_distance(phi_end)
         const a = center_vector.length()
         const b = center_vector.length()
         return {
             contains(p) {
+                const sq = x => x * x
                 const { dx, dy } = p.minus(center)
-                const { r, phi } = p.minus(center).to_polar()
-                return Math.abs(dx * dx / (a * a) + dy * dy / (b * b) - 1) <= .5 && angle_distance(phi) <= running_distance
+                const { phi } = p.minus(center).to_polar()
+                return abs(sq(dx) / sq(a) + sq(dy) / sq(b) - 1) <= .5 && angle_distance(phi) <= running_distance
             },
             start() { return start },
             end() { return end }
