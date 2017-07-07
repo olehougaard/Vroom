@@ -43,12 +43,14 @@ const neighbors = a => a.map((e, i) => [e, a[i + 1]]).filter(pair => pair[1])
 const increasing = a => neighbors(a).every(([fst, snd]) => fst <= snd)
 
 const curve_axioms = [
-    c => c.every(p => c.distance_to(p) <= Math.sqrt(1/2)),
-    c => increasing(c.map(p => p.minus(c.start()).length())),
-    c => c.every(c.contains),
-    c => c.contains(c.start()) && c.contains(c.end()),
-    c => c.outer(2).every(c.is_left),
-    c => c.inner(2).every(c.is_right),
+    { p: c => c.length > 0, msg: 'Curve must not be empty'},
+    { p: c => c.reduce((count, _) => count + 1, 0) === c.length, msg: 'The length of the curve corresponds to the actual elements'},
+    { p: c => c.every(p => c.distance_to(p) <= Math.sqrt(1/2)), msg: 'The elements in the curve are on the curve'},
+    { p: c => increasing(c.map(p => p.minus(c.start()).length())), msg: 'The curve is increasing in distance from start'},
+    { p: c => c.every(c.contains), msg: 'The elements of the curve are contained in the curve'},
+    { p: c => c.contains(c.start()) && c.contains(c.end()), msg: 'start and end are contained in the curve'},
+    { p: c => c.outer(2).every(c.is_left), msg: 'An outer curve is wholly to the left'},
+    { p: c => c.inner(2).every(c.is_right), msg: 'An inner curve is wholly to the right'},
 ]
 
 const shortest = curve.straight(position(0, 0), position(0, 0))
@@ -69,17 +71,17 @@ test('Shortest line', expect => {
 
 test('Horizontal line', expect => {
     expect.equals(horizontal.length, 3)
-    expect.true(curve_axioms.every(a => a(horizontal)))
+    curve_axioms.forEach(a => expect.true(a.p(horizontal), a.msg))
 })
 
 test('Diagonal line', expect => {
     expect.equals(diagonal.length, 3)
-    expect.true(curve_axioms.every(a => a(diagonal)))
+    curve_axioms.forEach(a => expect.true(a.p(diagonal), a.msg))
 })
 
 test('Vertical line', expect => {
     expect.equals(vertical.length, 3)
-    expect.true(curve_axioms.every(a => a(vertical)))
+    curve_axioms.forEach(a => expect.true(a.p(vertical), a.msg))
 })
 
 test('Left/right', expect => {
@@ -126,7 +128,7 @@ test('bounding rectangle', expect => {
 
 test('angled line', expect => {
     const line = curve.straight(position(0, 0), position(4, 2))
-    expect.true(curve_axioms.every(a => a(line)))    
+    curve_axioms.forEach(a => expect.true(a.p(line), a.msg))
 })
 
 test('lines have defined start and end', expect => {
@@ -142,8 +144,12 @@ test('(straight) displace moves in parallel', expect => {
     expect.true(line.displace(vector(0, 1)).every((e, i) => e.equals(expected[i])))
 })
 
+const negative_half_circle = curve.arc.negative(position(4, 0), 4, 4, Math.PI, 0)
+const positive_half_circle = curve.arc.positive(position(4, 0), 4, 4, Math.PI, 0)
+const ajar_half_circle = curve.arc.negative(position(4, 0), 4, 4, 3 * Math.PI / 4, 7 * Math.PI / 4)
+const quarter_ellipse = curve.arc.negative(position(4, 0), 4, 2, Math.PI /2, 0)
+
 test('Negative half circle hits the expected points', expect => {
-    const negative_half_circle = curve.arc.negative(position(4, 0), 4, 4, Math.PI, 0)
     expect.approximateDeepEquals(negative_half_circle.start(), position(0, 0), 'Starts at the given start')
     expect.approximateDeepEquals(negative_half_circle.end(), position(8, 0), 'Ends at the given end')
     expect.true(negative_half_circle.contains(position(4, 4)), 'Top point is contained')
@@ -152,7 +158,6 @@ test('Negative half circle hits the expected points', expect => {
 })
 
 test('Reverse half circle hits the expected points', expect => {
-    const positive_half_circle = curve.arc.positive(position(4, 0), 4, 4, Math.PI, 0)
     expect.approximateDeepEquals(positive_half_circle.start(), position(0, 0), 'Starts at the given start')
     expect.approximateDeepEquals(positive_half_circle.end(), position(8, 0), 'Ends at the given end')
     expect.false(positive_half_circle.contains(position(4, 4)), 'Top point is not contained')
@@ -161,7 +166,6 @@ test('Reverse half circle hits the expected points', expect => {
 
 test('ajar half circle hits the expected points', expect => {
     const sqrt1_2 = Math.sqrt(1/2)
-    const ajar_half_circle = curve.arc.negative(position(4, 0), 4, 4, 3 * Math.PI / 4, 7 * Math.PI / 4)
     expect.approximateDeepEquals(ajar_half_circle.start(), position(4 - 4 * sqrt1_2, 4 * sqrt1_2), 'Starts at the given start')
     expect.approximateDeepEquals(ajar_half_circle.end(), position(4 + 4 * sqrt1_2, - 4 * sqrt1_2), 'Ends at the given end')
     expect.true(ajar_half_circle.contains(position(4*(1+sqrt1_2), 4 * sqrt1_2)), 'Top point is contained')
@@ -171,9 +175,24 @@ test('ajar half circle hits the expected points', expect => {
 })
 
 test('quarter ellipse hits the expected points', expect => {
-    const quarter_ellipse = curve.arc.negative(position(4, 0), 4, 2, Math.PI /2, 0)
     expect.approximateDeepEquals(quarter_ellipse.start(), position(4, 2), 'Starts from vertical')
     expect.approximateDeepEquals(quarter_ellipse.end(), position(8, 0), 'Goes to horizontal')
     expect.false(quarter_ellipse.contains(position(0, 0)), 'Does not start from horizontal')
     expect.true(quarter_ellipse.contains(position(6, Math.sqrt(3))), 'Hits expected position at PI/3')
+})
+
+test('Negative half circle fullfills the axioms', expect => {
+    curve_axioms.forEach(a => expect.true(a.p(negative_half_circle), a.msg))
+})
+
+test('Positive half circle fullfills the axioms', expect => {
+    curve_axioms.forEach(a => expect.true(a.p(positive_half_circle), a.msg))
+})
+
+test('Ajar half circle fullfills the axioms', expect => {
+    curve_axioms.forEach(a => expect.true(a.p(ajar_half_circle), a.msg))
+})
+
+test('Quarter ellipse fullfills the axioms', expect => {
+    curve_axioms.forEach(a => expect.true(a.p(quarter_ellipse), a.msg))
 })
