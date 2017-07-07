@@ -63,62 +63,55 @@ module.exports = (() => {
             return positions
         }
     const arc = (center, a, b, phi_start, phi_end, direction) => {
+        direction = direction > 0 ? 1 : -1
         const {abs, PI, cos, sin, ceil, sqrt} = Math
         const angle_distance = (phi) => {
             const delta_phi = direction > 0 ? phi - phi_start : phi_start - phi
             return delta_phi < 0 ? delta_phi + 2 * PI : delta_phi
         }
         const angle_length = angle_distance(phi_end)
-        const sq = x => x * x
-        const outside = (p) => {
+        const radius = phi => vector(a * cos(phi), b * sin(phi))
+        const curve_distance = p => {
                 const { phi, r } = p.minus(center).to_polar()
-                return sq(r) >= sq(a * cos(phi)) + sq(a * sin(phi))
+                return r - radius(phi).length()
         }
-        const inside = (p) => {
-                const { phi, r } = p.minus(center).to_polar()
-                return sq(r) <= sq(a * cos(phi)) + sq(a * sin(phi))
-        }
-        const larger = dist => arc(center, a + dist, b + dist, phi_start, phi_end, direction)
-        const smaller = dist => {
-            if (dist > a || dist > b) 
+        const resize = dist => {
+            if (a + dist < 0 || b + dist < 0)
                 return arc(center, 1, 1, phi_start, phi_end, direction)
             else
-                return arc(center, a - dist, b - dist, phi_start, phi_end, direction)
+                return arc(center, a + dist, b + dist, phi_start, phi_end, direction)
         }
         const curve = Object.assign(Object.create(Array.prototype), {
             contains(p) {
-                const { dx, dy } = p.minus(center)
                 const { phi } = p.minus(center).to_polar()
-                return abs(sq(dx) / sq(a) + sq(dy) / sq(b) - 1) <= .5 && angle_distance(phi) <= angle_length
+                return abs(curve_distance(p)) <= sqrt(.5) && angle_distance(phi) <= angle_length
             },
             start() { 
-                return center.plus(vector(a * cos(phi_start), b * sin(phi_start)))
+                return center.plus(radius(phi_start))
             },
             end() { 
-                return center.plus(vector(a * cos(phi_end), b * sin(phi_end)))
+                return center.plus(radius(phi_end))
             },
             is_left(p) {
-                return direction < 0 ? outside(p) : inside(p)
+                return direction * curve_distance(p) <= 0
             },
             is_right(p) {
-                return direction < 0 ? inside(p) : outside(p)
+                return direction * curve_distance(p) >= 0
             },
             outer(dist) {
-                return direction < 0 ? larger(dist) : smaller(dist)
+                return resize(-direction * dist)
             },
             inner(dist) {
-                return direction < 0 ? smaller(dist) : larger(dist)
+                return resize(direction * dist)
             },
             distance_to(p) {
-                const { phi, r } = p.minus(center).to_polar()
-                return abs(r - sqrt(sq(a * cos(phi)) + sq(b * sin(phi))))
+                return abs(curve_distance(p))
             },
             length: ceil(sqrt(a*b)*angle_length)
         })
         for(let i = 0; i < curve.length; i++) {
-            const relative_angle = angle_length / curve.length * i
-            const phi = direction > 0 ? phi_start + relative_angle : phi_start - relative_angle
-            curve[i] = center.plus(vector(a * cos(phi), b * sin(phi)))
+            const phi = phi_start + direction * i * angle_length / curve.length
+            curve[i] = center.plus(radius(phi))
         }
         return curve
     }
