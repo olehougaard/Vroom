@@ -1,4 +1,4 @@
-const { line, position } = require('./track.js')
+const { line, position, vector } = require('./track.js')
 
 module.exports = (() => {
     // Transforms vec into coordinates of the system (base.dx, base.dy)
@@ -62,30 +62,29 @@ module.exports = (() => {
             Object.setPrototypeOf(positions, prototype)   
             return positions
         }
-    const arc = (start, angle_in, end, angle_out) => {
-        const {abs, PI} = Math
-        const center_vector = end.minus(start).multiply(.5)
-        const center = start.plus(center_vector)
-        const { r: r_start, phi: phi_start } = start.minus(center).to_polar()
-        const { r: r_end, phi: phi_end } = end.minus(center).to_polar()
+    const arc = (center, a, b, phi_start, phi_end, direction) => {
+        const {abs, PI, cos, sin} = Math
         const angle_distance = (phi) => {
-            // if angle_in > phi_start we are running in the positive direction
-            const delta_phi = angle_in > phi_start ? phi - phi_start : phi_start - phi
+            const delta_phi = direction > 0 ? phi - phi_start : phi_start - phi
             return delta_phi < 0 ? delta_phi + 2 * PI : delta_phi
         }
-        const running_distance = angle_distance(phi_end)
-        const a = center_vector.length()
-        const b = center_vector.length()
+        const angle_width = angle_distance(phi_end)
         return {
             contains(p) {
                 const sq = x => x * x
                 const { dx, dy } = p.minus(center)
                 const { phi } = p.minus(center).to_polar()
-                return abs(sq(dx) / sq(a) + sq(dy) / sq(b) - 1) <= .5 && angle_distance(phi) <= running_distance
+                return abs(sq(dx) / sq(a) + sq(dy) / sq(b) - 1) <= .5 && angle_distance(phi) <= angle_width
             },
-            start() { return start },
-            end() { return end }
+            start() { 
+                return center.plus(vector(a * cos(phi_start), b * sin(phi_start)))
+            },
+            end() { 
+                return center.plus(vector(a * cos(phi_end), b * sin(phi_end)))
+            }
         }
     }
+    arc.positive = (center, a, b, phi_start, phi_end) => arc(center, a, b, phi_start, phi_end, 1)
+    arc.negative = (center, a, b, phi_start, phi_end) => arc(center, a, b, phi_start, phi_end, -1)
     return { straight, arc }
 })()

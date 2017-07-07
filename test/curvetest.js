@@ -1,6 +1,36 @@
 const _test = require('tape')
 const test = (description, test_function) => {
+	const approximateDeepEqual = (actual, expected, tolerance) => {
+		if (typeof actual === 'number') {
+            const error = expected === 0? actual - expected : (actual - expected) / expected
+			return Math.abs(error) < tolerance
+		} else {
+			return Object.getOwnPropertyNames(actual).every(n => approximateDeepEqual(actual[n], expected[n], tolerance))
+		}
+	}
 	_test(description, (expect) => {
+		expect.approximatelyEquals = (actual, expected, tolerance, message) => {
+			if (!message) {
+				message = tolerance
+				tolerance = 1e-10
+			}
+            expect._assert(Math.abs(actual - expected) < tolerance, {
+                message: message || 'Should be approximate',
+                operator: 'approximateDeepEquals',
+                actual, expected
+            })
+		}
+		expect.approximateDeepEquals = (actual, expected, tolerance, message) => {
+			if (!message) {
+				message = tolerance
+				tolerance = 1e-10
+            }
+            expect._assert(approximateDeepEqual(actual, expected, tolerance), {
+                message: message || 'Should be approximate',
+                operator: 'approximateDeepEquals',
+                actual, expected
+            })
+		}
 		test_function(expect)
 		expect.end()
 	})
@@ -113,23 +143,27 @@ test('(straight) displace moves in parallel', expect => {
 })
 
 test('half circle hits the expected points', expect => {
-    const half_circle = curve.arc(position(0, 0), Math.PI / 2, position(8, 0), 3 * Math.PI / 2)
-    expect.deepEquals(position(0, 0), half_circle.start(), 'Starts at the given start')
-    expect.deepEquals(position(8, 0), half_circle.end(), 'Ends at the given end')
+    const half_circle = curve.arc.negative(position(4, 0), 4, 4, Math.PI, 0)
+    expect.approximateDeepEquals(half_circle.start(), position(0, 0), 'Starts at the given start')
+    expect.approximateDeepEquals(half_circle.end(), position(8, 0), 'Ends at the given end')
     expect.true(half_circle.contains(position(4, 4)), 'Top point is contained')
     expect.false(half_circle.contains(position(4, 0)), 'Half circle does not pass through center')
     expect.false(half_circle.contains(position(4, -4)), 'Bottom point is not contained')
 })
 
 test('Reverse half circle hits the expected points', expect => {
-    const half_circle = curve.arc(position(0, 0), 3 * Math.PI / 2, position(8, 0), Math.PI / 2)
+    const half_circle = curve.arc.positive(position(4, 0), 4, 4, Math.PI, 0)
+    expect.approximateDeepEquals(half_circle.start(), position(0, 0), 'Starts at the given start')
+    expect.approximateDeepEquals(half_circle.end(), position(8, 0), 'Ends at the given end')
     expect.false(half_circle.contains(position(4, 4)), 'Top point is not contained')
     expect.true(half_circle.contains(position(4, -4)), 'Bottom point is contained')
 })
 
 test('ajar half circle hits the expected points', expect => {
     const sqrt1_2 = Math.sqrt(1/2)
-    const half_circle = curve.arc(position(4 * (1-sqrt1_2), 4*sqrt1_2), Math.PI / 4, position(4*(1+sqrt1_2), -4 * sqrt1_2), 5 * Math.PI / 4)
+    const half_circle = curve.arc.negative(position(4, 0), 4, 4, 3 * Math.PI / 4, 7 * Math.PI / 4)
+    expect.approximateDeepEquals(half_circle.start(), position(4 - 4 * sqrt1_2, 4 * sqrt1_2), 'Starts at the given start')
+    expect.approximateDeepEquals(half_circle.end(), position(4 + 4 * sqrt1_2, - 4 * sqrt1_2), 'Ends at the given end')
     expect.true(half_circle.contains(position(4*(1+sqrt1_2), 4 * sqrt1_2)), 'Top point is contained')
     expect.false(half_circle.contains(position(0, 0)), 'Early point is not contained')
     expect.true(half_circle.contains(position(8, 0)), '3/4 point is contained')
