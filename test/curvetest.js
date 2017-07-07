@@ -170,3 +170,10 @@ test('ajar half circle hits the expected points', expect => {
     expect.false(ajar_half_circle.contains(position(4, -4)), 'Late point is not contained')
 })
 
+test('quarter ellipse hits the expected points', expect => {
+    const quarter_ellipse = curve.arc.negative(position(4, 0), 4, 2, Math.PI /2, 0)
+    expect.approximateDeepEquals(quarter_ellipse.start(), position(4, 2), 'Starts from vertical')
+    expect.approximateDeepEquals(quarter_ellipse.end(), position(8, 0), 'Goes to horizontal')
+    expect.false(quarter_ellipse.contains(position(0, 0)), 'Does not start from horizontal')
+    expect.true(quarter_ellipse.contains(position(6, Math.sqrt(3))), 'Hits expected position at PI/3')
+})
