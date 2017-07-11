@@ -1,4 +1,4 @@
-const { position, vector, move, track} = require('./track.js')
+const { position, vector, move, track_from_string_array} = require('./track.js')
 const { is_legal, next_moves, run } = require('./rules.js')(vector, move)
 const consolegame = require('./consolegame.js')
 
@@ -37,6 +37,7 @@ const track_spec = [
 	'X  XXXX  X',
 	'X  XXXX  X'
 ]
-const the_track = track(track_spec, [position(7, 0), position(8, 0)])
-
-consolegame(run)(() => ({ track: the_track, starting_position: position(2, 0) })).run(real_console(process))
+const the_track = track_from_string_array(track_spec, [position(7, 0), position(8, 0)])
+const generator = () => ({ track: the_track, starting_position: position(2, 0) })
+const game = consolegame(run)(generator)
+game.run(real_console(process))
