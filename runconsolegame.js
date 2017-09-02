@@ -1,6 +1,8 @@
-const { position, vector, move, track_from_string_array} = require('./track.js')
-const { is_legal, next_moves, run } = require('./rules.js')(vector, move)
-const consolegame = require('./consolegame.js')
+const { position, vector, move, track} = require('./track.js')
+const { run } = require('./rules.js')(vector, move)
+const { arc } = require('./curve.js')
+const { from_curve } = require('./trackgenerator.js')(track, vector)
+const consolegame = require('./consolegame.js')(run)
 
 
 const real_console = ({stdin, stdout}) => {
@@ -25,19 +27,7 @@ const real_console = ({stdin, stdout}) => {
     }
 }
 
-const track_spec = [
-  	'XXXXXXXXXX',
-  	'XXXXXXXXXX',
-	'XXX    XXX',
-	'XXX    XXX',
-	'XX      XX',
-	'XX      XX',
-	'X   XX   X',
-	'X   XX   X',
-	'X  XXXX  X',
-	'X  XXXX  X'
-]
-const the_track = track_from_string_array(track_spec, [position(7, 0), position(8, 0)])
-const generator = () => ({ track: the_track, starting_position: position(2, 0) })
-const game = consolegame(run)(generator)
+const the_track = from_curve({width: 21, height: 21}, arc.negative(position(11, 0), 6, 16, Math.PI, 0), 6)
+const generator = () => the_track
+const game = consolegame(generator)
 game.run(real_console(process))
