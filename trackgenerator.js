@@ -27,8 +27,8 @@ module.exports = (track, vector) => {
         return { previous, next, position }
     }
     const from_curve = (size, curve, width) => {
-        const outer_curve = curve.displace(vector(0, width / 2))
-        const inner_curve = curve.displace(vector(0, -width / 2))
+        const outer_curve = curve.outer(width / 2)
+        const inner_curve = curve.inner(width / 2)
         const inbounds = p => outer_curve.is_right(p) && inner_curve.is_left(p)
         const last_free = (p, next) => {
             while(inbounds(next(p).position)) p = next(p)

@@ -39,8 +39,9 @@ test('Corner to corner', expect => {
     const width = 4
     const size = { width: 11, height: 11 }
     const { track, starting_positions } = trackgenerator.from_curve(size, line, width)
+    console.log(starting_positions)
     expect.true(set_equals(
         starting_positions,
         [ position(0, 2), position(0, 1), position(0, 0), position(1, 0), position(2, 0) ]),
-        'Starting positions around a corner')
+        'Starting positions around a corner are ')
 })
