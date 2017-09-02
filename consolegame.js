@@ -13,7 +13,7 @@ module.exports = (runner) => (track_gen) => {
     const key = ({dx, dy}) => keys[1 - dy][1 + dx]
     
     return { run(display) {
-        const {track, starting_position} = track_gen()
+        const {track, starting_positions} = track_gen()
 
         const position_marker = '.'
         const show_position = (p, char = position_marker)  => ({ x: p.x, y: p.y, char })
@@ -56,7 +56,7 @@ module.exports = (runner) => (track_gen) => {
                 })
             }
         }
-        runner(track, { player, starting_position })
+        runner(track, { player, starting_position: starting_positions[Math.floor(Math.random() * starting_positions.length)] })
             .onFinish(({winner, turn, final}) => {
                 if (winner.length === 0) {
                     display.tell('You crashed after ' + turn + ' turns')    

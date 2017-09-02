@@ -99,7 +99,7 @@ test('The short run', expect => {
     console.expect_ask('Please select move', '3', 'Game prompts for move')
     console.expect_tell(track_printer().splice(0, 8, '#').toString(), 'Game shows game state')
     console.expect_tell('You won in 1 turn', 'Came reports result')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -120,7 +120,7 @@ test('Won in two', expect => {
     console.expect_ask('Please select move', '3', 'Game prompts for move')
     console.expect_tell(track_printer().splice(0, 8, '#').toString(), 'Game shows game state')
     console.expect_tell('You won in 2 turns', 'Came reports result')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -133,7 +133,7 @@ test('The early cancel', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', 'Game prompts for move')
     console.expect_tell('Cancelled', 'Game reports error')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -152,7 +152,7 @@ test('The second move', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', 'Game prompts for move')
     console.expect_tell('Cancelled', 'Game reports error')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -220,7 +220,7 @@ test('All directions', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', 'Game prompts for move')
     console.expect_tell('Cancelled', 'Game reports error')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -246,7 +246,7 @@ test('Showing the player position', expect => {
         .toString(), 'Game shows game state')
     console.expect_ask('Please select move', 'Game prompts for move')
     console.expect_tell('Cancelled', 'Game reports error')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -281,7 +281,7 @@ test('Crashing', expect => {
         .splice(9, 4, '.')
         .toString(), 'Game shows game state')
     console.expect_tell('You crashed after 4 turns')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
 
@@ -301,6 +301,6 @@ test('Wrong input', expect => {
     console.expect_ask('Please select move', '3',  'Game prompts for move')
     console.expect_ask('Not a valid move. Please select move')
     console.expect_tell('Cancelled', 'Game reports error')
-    const game = consolegame(run)(() => ({ track: the_track, starting_position }))
+    const game = consolegame(run)(() => ({ track: the_track, starting_positions: [starting_position] }))
     game.run(console.run())
 })
