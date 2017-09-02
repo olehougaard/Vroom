@@ -41,9 +41,9 @@ module.exports = (track, vector) => {
         }
         const directions = [ p => p.previous(), p => p.next() ]
         const starting_positions = Array.prototype.concat.apply(
-            [ edge_tile(curve.start(), size) ],
-            directions.map ( take_while_on_track(edge_tile(curve.start(), size))))
-        const finish_line = take_while_on_track(last_free(edge_tile(curve.end(), size), p => p.previous()))(p => p.next())
+            [ edge_tile(curve.start().round(), size) ],
+            directions.map ( take_while_on_track(edge_tile(curve.start().round(), size))))
+        const finish_line = take_while_on_track(last_free(edge_tile(curve.end().round(), size), p => p.previous()))(p => p.next())
         const the_track = track(size, inbounds, finish_line.map(p => p.position))
         return { track: the_track, starting_positions: starting_positions.map(p => p.position) }
     }

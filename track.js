@@ -36,6 +36,9 @@ module.exports = (() => {
 			},
 			equals(that) {
 				return that && x === that.x && y === that.y
+			},
+			round() {
+				return position(Math.round(x), Math.round(y))
 			}
 		}
 		return Object.assign(Object.create(prototype), { x, y })
