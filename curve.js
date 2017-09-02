@@ -64,13 +64,13 @@ module.exports = (() => {
         }
     const arc = (center, a, b, phi_start, phi_end, direction) => {
         direction = direction > 0 ? 1 : -1
-        const {abs, PI, cos, sin, ceil, sqrt} = Math
+        const {abs, PI, cos, sin, ceil, sqrt, round, pow} = Math
         const angle_distance = (phi) => {
             const delta_phi = direction > 0 ? phi - phi_start : phi_start - phi
             return delta_phi < 0 ? delta_phi + 2 * PI : delta_phi
         }
         const angle_length = angle_distance(phi_end)
-        const radius = phi => vector(a * cos(phi), b * sin(phi))
+        const radius = phi => vector.from_polar({r : a * b / sqrt(pow(b * cos(phi), 2) + pow(a * sin(phi), 2)), phi })  
         const curve_distance = p => {
                 const { phi, r } = p.minus(center).to_polar()
                 return r - radius(phi).length()
