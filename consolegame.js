@@ -1,3 +1,5 @@
+const {position} = require('./track.js')
+
 module.exports = (runner) => (track_gen) => {
     const range = (size) => Array(...Array(size)).map((_, i) => i)
     const keys = 
@@ -22,7 +24,7 @@ module.exports = (runner) => (track_gen) => {
                 .filter(({x, y}) => 0 <= x && x < width && 0 <= y && y < height)
                 .reduce((map, {x, y, char}) => { map[y][x] = char; return map }, range(height).map(() => Array(width)))
             return range(height)
-                .map( y => range(width).map( x => track.in_bounds({x, y}) ? ' ' : 'X'))
+                .map( y => range(width).map( x => track.in_bounds(position(x, y)) ? ' ' : 'X'))
                 .map( (row, y) => row.map( (cell, x) => overlay_map[y][x] === undefined? cell : overlay_map[y][x] ))
                 .map( row => row.join(''))
                 .reverse().join('\n')
