@@ -37,27 +37,26 @@ module.exports = (vector, move) => {
         .filter(is_legal(track)),
        default_move: move(mv.end, mv.velocity)
     })
-  const filter_index = (p) =>(a) => a.map((e, i) => ({e, i})).filter(({e, i}) => p(e, i, a)).map(({e, i}) => i)
   const run = (track, ...players) => {
-    const state = players.map(player => ({is_live: true, player: player.player, move: move(player.starting_position, vector())}))
+    const state = players.map((player, i) => ({is_live: true, player: player.player, player_no: i, move: move(player.starting_position, vector())}))
     return stream({state, turn: 1})(({state, turn}, recur, error, finish) => {
       Promise.all(state.map(seed => {
         // Non-live players stay where they are until the game is resolved:
         if (!seed.is_live) return Promise.resolve(seed)
-        const {move, player} = seed
+        const {move, player, player_no} = seed
         const next = next_moves(track)(move)
         // Note: If the player has no legal moves an empty moveset is still fed to the player to
         // allow the UI to notify the player.
         return player(next).then(move=> {
+          if (move && !next.possible_moves.some(move.equals)) return { dsq: 'Illegal move', is_live: false }
           if (next.possible_moves.length === 0) return {dnf: 'Crashed', is_live: false }
-          if (!next.possible_moves.some(move.equals)) return { dsq: 'Illegal move', is_live: false }
-          return { is_live: true, move, player}
+          return { is_live: true, move, player, player_no}
         })
       }))
       .then(result => {
         const is_winner = x => x.is_live && track.finish(x.move)
         if (result.some(is_winner)) {
-          finish({winner: filter_index(is_winner)(result), turn, final: result})
+          finish({winner: result.filter(is_winner).map(w=>w.player_no), turn, final: result})
         } else if (!result.some(x => x.is_live)) {
           finish({winner: [], turn, final: result})
         } else {
