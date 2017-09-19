@@ -26,42 +26,80 @@ module.exports = (vector, move) => {
     return the_stream
   }
 
+  const split = (p) => (a) => [a.filter(p), a.filter((...args) => !p(...args))]
+  const pipe = (...fns) => fns.slice(1).reduce((y, f) => f(y), fns[0])
+  
   const is_legal = track => m => track.finish(m) || !track.intersects(m)
   const moves = [
     vector(-1, 1),  vector(0, 1),  vector(1, 1),
     vector(-1, 0),  vector(0, 0),  vector(1, 0),
     vector(-1, -1), vector(0, -1), vector(1, -1)]
-  const next_moves = track => mv =>
-    ({ possible_moves: moves
+  const next_moves = track => mv => ({ 
+    possible_moves: moves
         .map(v => move(mv.end, mv.velocity.plus(v)))
         .filter(is_legal(track)),
-       default_move: move(mv.end, mv.velocity)
-    })
+    default_move: move(mv.end, mv.velocity)
+  })
+  const player_state = {
+    init: ({player, starting_position}, player_no) => 
+      ({ is_live: true, player, player_no, move: move(starting_position, vector())}),
+    dsq : ({player_no}) => 
+      ({player_no, dsq: 'Illegal move', is_live: false}),
+    dnf : ({player_no}) => 
+      ({player_no, dnf: 'Crashed', is_live: false}),
+    live: ({move, player, player_no}) => 
+      ({move, player, player_no, is_live: true})
+  }
+  
+  const game_state = (player_states) => {
+    const update_moves = (f, moves) => (updated) => {
+      moves.forEach(move => { updated[move.player_no] = f(move) })
+      return updated
+    }
+    const update = ({illegal, crashed, live}) => pipe(player_states.slice(0),
+      update_moves(player_state.dsq, illegal),
+      update_moves(player_state.dnf, crashed),
+      update_moves(player_state.live, live),
+      game_state)
+    const live_players = () => player_states.filter(p => p.is_live)
+    const win_state = (winner) => ({winner, final: player_states, end_state: true})
+    const lose_state = () => ({final: player_states, end_state: true})
+    return { player_states, update, live_players, win_state, lose_state }
+  }
+  game_state.init = (players) => game_state(players.map(player_state.init))
+
+  const make_move = (state, track, legal_moves, illegal_moves) => {
+    const [live, crashed] = split(m => m.move)(legal_moves)
+    const next_state = state.update({illegal: illegal_moves, crashed, live})
+    if (live.some(x => track.finish(x.move))) {
+      return next_state.win_state(live.filter(x => track.finish(x.move)).map(w=>w.player_no))
+    } else if (live.length == 0) {
+      return next_state.lose_state()
+    } else {
+      return next_state
+    }
+  }
+
   const run = (track, ...players) => {
-    const state = players.map((player, i) => ({is_live: true, player: player.player, player_no: i, move: move(player.starting_position, vector())}))
-    return stream({state, turn: 1})(({state, turn}, recur, error, finish) => {
-      Promise.all(state.map(seed => {
-        // Non-live players stay where they are until the game is resolved:
-        if (!seed.is_live) return Promise.resolve(seed)
-        const {move, player, player_no} = seed
-        const next = next_moves(track)(move)
+    return stream({state: game_state.init(players), turn: 1})(({state, turn}, recur, error, finish) => {
+      Promise.all(state.live_players().map(({move, player, player_no}) => {
+        const legal_moves = next_moves(track)(move)
         // Note: If the player has no legal moves an empty moveset is still fed to the player to
-        // allow the UI to notify the player.
-        return player(next).then(move=> {
-          if (move && !next.possible_moves.some(move.equals)) return { dsq: 'Illegal move', is_live: false }
-          if (next.possible_moves.length === 0) return {dnf: 'Crashed', is_live: false }
-          return { is_live: true, move, player, player_no}
+        // allow the UI to notify the player. The player must return undefined.
+        return player(legal_moves).then(move=> {
+          if (move && !legal_moves.possible_moves.some(move.equals)) 
+            return { dsq: 'Illegal move', player_no }
+          else
+            return { move, player, player_no}
         })
       }))
-      .then(result => {
-        const is_winner = x => x.is_live && track.finish(x.move)
-        if (result.some(is_winner)) {
-          finish({winner: result.filter(is_winner).map(w=>w.player_no), turn, final: result})
-        } else if (!result.some(x => x.is_live)) {
-          finish({winner: [], turn, final: result})
-        } else {
-          recur({ move: result, turn }, { state: result, turn: turn + 1})
-        }
+      .then(split(m=>m.dsq))
+      .then(([illegal, legal]) => make_move(state, track, legal, illegal))
+      .then(new_state => {
+        if (new_state.end_state)
+          finish(Object.assign(new_state, {turn}))
+        else
+          recur({ move: new_state.player_states, turn }, { state: new_state, turn: turn + 1})
       })
       .catch(error)
     })

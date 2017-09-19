@@ -53,12 +53,13 @@ module.exports = (runner) => (track_gen) => {
                 display.tell(display_track(...mv_overlay, show_position(start)))
                 return display.ask('Danger, danger, danger ...').then(() => {
                     display.tell(display_track(show_position(end)))
+                    return undefined
                 })
             }
         }
         runner(track, { player, starting_position: starting_positions[Math.floor(Math.random() * starting_positions.length)] })
             .onFinish(({winner, turn, final}) => {
-                if (winner.length === 0) {
+                if (!winner) {
                     display.tell('You crashed after ' + turn + ' turns')    
                 } else {
                     const [{move: { end }}] = final

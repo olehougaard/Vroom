@@ -164,19 +164,19 @@ test('cheating finishes with dsq', expect => {
 	expect.plan(6)
 	run(the_track, {player: () => Promise.resolve(move(p0, v0)), starting_position: p0})
 		.onFinish(({winner, turn, final}) => {
-			expect.deepEquals(winner, [], 'Moving out of bounds doesn\'t produce a winner')
+			expect.deepEquals(winner, undefined, 'Moving out of bounds doesn\'t produce a winner')
 			expect.deepEquals(final[0].dsq, 'Illegal move', 'Moving out of bounds disqualifies')
 		})
 		.onError(reason => expect.fail('Shouldn\'t give ' + reason))
 	run(the_track, {player: () => Promise.resolve(move(p0, v1)), starting_position: p0})
 		.onFinish(({winner, turn, final}) => {
-			expect.deepEquals(winner, [], 'Ineligeble moves doesn\'t produce a winner')
+			expect.deepEquals(winner, undefined, 'Ineligeble moves doesn\'t produce a winner')
 			expect.deepEquals(final[0].dsq, 'Illegal move', 'Ineligble moves disqualifies')
 		})
 		.onError(reason => expect.fail('Shouldn\'t give ' + reason))
 	run(the_track, {player: () => Promise.resolve(move(p1, v1)), starting_position: p0})
 		.onFinish(({winner, turn, final}) => {
-			expect.deepEquals(winner, [], 'Teleporting doesn\'t produce a winner')
+			expect.deepEquals(winner, undefined, 'Teleporting doesn\'t produce a winner')
 			expect.deepEquals(final[0].dsq, 'Illegal move', 'Teleporting disqualifies')
 		})
 		.onError(reason => expect.fail('Shouldn\'t give ' + reason))
@@ -198,7 +198,7 @@ test('single-player run out of bounds', (expect) => {
 		expect.true(the_track.in_bounds(move.end), 'Moves are with bounds')
 	})
 	.onFinish(({ winner, turn, final}) => {
-		expect.deepEquals(winner, [], 'Out of bounds is losing')
+		expect.deepEquals(winner, undefined, 'Out of bounds is losing')
 		expect.deepEquals(turn, 4)
 		expect.deepEquals(final[0].dnf,'Crashed')
 	})
@@ -273,7 +273,7 @@ test('No winners', (expect) => {
 	run(the_track, dnf, cheater)
 		.onValue(({move, turn}) => expect.deepEquals(move.map(project('move', 'dsq')), expected_turns[turn - 1], 'Game proceeds as expected'))
 		.onFinish(({winner, turn, final}) => {
-			expect.deepEquals(winner, [])
+			expect.deepEquals(winner, undefined)
 			expect.deepEquals(turn, 4)
 			expect.deepEquals(final.map(project('dnf', 'dsq')),  [{dnf: 'Crashed'}, {dsq: 'Illegal move'}])
 		})
@@ -302,7 +302,7 @@ test('Crashing at different times', (expect) => {
 	run(the_track, dnf, late_dnf)
 		.onValue(({move, turn}) => expect.deepEquals(move.map(project('move', 'dnf')), expected_turns[turn - 1], 'Game proceeds as expected'))
 		.onFinish(({winner, final, turn}) => {
-			expect.deepEquals(winner, [])
+			expect.deepEquals(winner, undefined)
 			expect.deepEquals(turn, 7)
 			expect.deepEquals(final.map(project('dnf')), [{dnf: 'Crashed'}, {dnf: 'Crashed'}])
 		})
